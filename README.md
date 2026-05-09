@@ -80,3 +80,67 @@ pgstream/
 │   └── models/
 │       └── event.go                - WalEvent struct definition
 ```
+
+## Setup
+
+**Prerequisites**
+- PostgreSQL with logical replication enabled
+- Go 1.21 or higher
+
+**Enable logical replication in postgresql.conf**
+wal_level = logical
+Restart Postgres after changing this.
+
+**Clone the repo**
+git clone https://github.com/mujib77/pgstream
+cd pgstream
+
+**Create a .env file**
+DATABASE_URL=postgres://user:password@localhost:5432/dbname?replication=database
+SLOT_NAME=pgstream_slot
+PUBLICATION_NAME=pgstream_pub
+
+**Create publication in your database**
+```sql
+CREATE PUBLICATION pgstream_pub FOR ALL TABLES;
+```
+
+**Install dependencies**
+go mod tidy
+
+**Run**
+go run main.go
+
+## Example Output
+
+connecting to postgres...
+connected!
+replication slot created: pgstream_slot
+starting replication...
+listening for changes...
+[INSERT] table=users lsn=0/16C752F8
+data={
+"email": "wal@gmail.com",
+"id": "1",
+"name": "Mujib"
+}
+[UPDATE] table=users lsn=0/16C75410
+old={
+"name": "Mujib"
+}
+new={
+"name": "Bum"
+}
+[DELETE] table=users lsn=0/16C754A8
+data={
+"email": "wal@gmail.com",
+"id": "1",
+"name": "Bum"
+}
+
+## Tech Stack
+
+- Go
+- pglogrepl - Postgres logical replication protocol
+- pgx - Postgres driver for Go
+- PostgreSQL logical decoding with pgoutput plugin
