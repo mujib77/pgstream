@@ -1,3 +1,4 @@
+![CI](https://github.com/mujib77/pgstream/actions/workflows/ci.yml/badge.svg)
 # pgstream
 
 A real-time PostgreSQL WAL reader built in Go.
