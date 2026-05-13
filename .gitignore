@@ -13,3 +13,5 @@ go.work
 
 .vscode/
 .idea/  
+
+vendor/
