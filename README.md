@@ -1,3 +1,4 @@
+![License](https://img.shields.io/badge/license-MIT-blue)
 ![CI](https://github.com/mujib77/pgstream/actions/workflows/ci.yml/badge.svg)
 # pgstream
 
