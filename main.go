@@ -17,22 +17,23 @@ func main() {
 	cfg := config.DefaultConfig()
 
 	fmt.Println("connecting to postgres...")
-	conn, err := connector.New(cfg.DatabaseURL, cfg.SlotName, cfg.PublicationName)
+	ctx := context.Background()
+	conn, err := connector.New(ctx, cfg.DatabaseURL, cfg.SlotName, cfg.PublicationName)
 	if err != nil {
 		fmt.Println("error:", err)
 		os.Exit(1)
 	}
-	defer conn.Close()
+	defer conn.Close(ctx)
 	fmt.Println("connected!")
 
 	fmt.Println("creating replication slot...")
-	err = conn.CreateSlot()
+	err = conn.CreateSlot(ctx)
 	if err != nil {
 		fmt.Println("slot may already exist, continuing...")
 	}
 
 	fmt.Println("starting replication...")
-	err = conn.Start()
+	err = conn.Start(ctx)
 	if err != nil {
 		fmt.Println("error:", err)
 		os.Exit(1)
