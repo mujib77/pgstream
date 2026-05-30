@@ -39,7 +39,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	dec := decoder.New(conn.GetConn())
+	dec := decoder.New(conn.GetRawConn())
 	han := handler.New()
 
 	ctx, cancel := context.WithCancel(context.Background())
