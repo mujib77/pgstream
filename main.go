@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/mujib77/pgstream/config"
 	"github.com/mujib77/pgstream/internal/connector"
@@ -39,16 +41,35 @@ func main() {
 	dec := decoder.New(conn.GetConn())
 	han := handler.New()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+		<-sig
+		fmt.Println("\nshutting down...")
+		cancel()
+	}()
+
 	fmt.Println("listening for changes...")
 	for {
-		event, err := dec.NextEvent(context.Background())
-		if err != nil {
-			fmt.Println("error:", err)
-			os.Exit(1)
-		}
-		err = han.Handle(event)
-		if err != nil {
-			fmt.Println("error:", err)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			event, err := dec.NextEvent(ctx)
+			if err != nil {
+				if ctx.Err() != nil {
+					return
+				}
+				fmt.Println("error:", err)
+				return
+			}
+			err = han.Handle(event)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
 		}
 	}
 }
