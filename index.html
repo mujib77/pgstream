@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pgstream — Real-time PostgreSQL CDC</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --text: #0a0a0a;
+    --text-secondary: #525252;
+    --text-muted: #737373;
+    --border: #e5e5e5;
+    --bg: #ffffff;
+    --bg-subtle: #fafafa;
+    --accent: #171717;
+    --accent-light: #404040;
+    --code-bg: #0a0a0a;
+    --success: #15803d;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    font-size: 16px;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .container-wide {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Nav */
+  nav {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+  }
+
+  .nav-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.3px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .nav-cta:hover { background: var(--accent-light); }
+
+  /* Hero */
+  .hero {
+    padding: 80px 0 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+
+  .hero-desc {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  .hero-meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+  }
+
+  .hero-meta a {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .hero-meta a:hover { color: var(--text); }
+
+  .hero-buttons {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover { background: var(--accent-light); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--text-muted); }
+
+  /* Code */
+  .code-section {
+    padding: 48px 0;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-block {
+    background: var(--code-bg);
+    border-radius: 8px;
+    padding: 24px 28px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #e5e5e5;
+    overflow-x: auto;
+  }
+
+  .code-block .comment { color: #737373; }
+  .code-block .prompt { color: #a3a3a3; }
+  .code-block .string { color: #86efac; }
+  .code-block .flag { color: #fca5a5; }
+  .code-block .cmd { color: #d4d4d4; }
+
+  /* Sections */
+  section {
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  section:last-of-type { border-bottom: none; }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  .section-desc {
+    color: var(--text-secondary);
+    font-size: 17px;
+    margin-bottom: 40px;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+
+  /* Use Cases - simple list */
+  .use-case {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .use-case:last-child { border-bottom: none; }
+
+  .use-case h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .use-case p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* Features - simple list */
+  .feature {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .feature:last-child { border-bottom: none; }
+
+  .feature-check {
+    color: var(--success);
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .feature h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .feature p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Architecture */
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .arch-box {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 24px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .arch-box.highlight {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .arch-arrow {
+    font-size: 18px;
+    color: var(--text-muted);
+  }
+
+  .arch-caption {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* Pricing */
+  .pricing-wrap {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .pricing-col {
+    flex: 1;
+    min-width: 280px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 36px 32px;
+    background: var(--bg);
+  }
+
+  .pricing-col.popular {
+    border-color: var(--text);
+    background: var(--bg-subtle);
+  }
+
+  .pricing-col h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .price {
+    font-size: 40px;
+    font-weight: 800;
+    margin-bottom: 28px;
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+
+  .price span {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  .pricing-col ul {
+    list-style: none;
+    margin-bottom: 32px;
+  }
+
+  .pricing-col ul li {
+    padding: 10px 0;
+    font-size: 15px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pricing-col ul li:last-child { border-bottom: none; }
+
+  /* CTA */
+  .cta {
+    background: var(--bg-subtle);
+    text-align: center;
+  }
+
+  .cta h2 {
+    margin-bottom: 12px;
+  }
+
+  .cta p {
+    color: var(--text-secondary);
+    font-size: 17px;
+    margin-bottom: 28px;
+  }
+
+  .cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+    text-align: center;
+  }
+
+  footer p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+
+  footer a:hover { color: var(--text); text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 36px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="#" class="logo">pgstream</a>
+    <div class="nav-links">
+      <a href="#use-cases">Use Cases</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="https://github.com/mujib77/pgstream" class="nav-cta" target="_blank">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-label">Open Source & Production Ready</div>
+    <h1>Real-time PostgreSQL Change Data Capture</h1>
+    <p class="hero-desc">
+      Stream INSERT, UPDATE, and DELETE events from PostgreSQL in real-time using logical replication. 
+      A lightweight, Go-native alternative to Debezium.
+    </p>
+    <p class="hero-meta">
+      <a href="https://github.com/mujib77/pgstream" target="_blank">31+ stars</a> · 
+      Featured by Golang News · 
+      Ranked #7 on r/golang
+    </p>
+    <div class="hero-buttons">
+      <a href="https://github.com/mujib77/pgstream" class="btn btn-primary" target="_blank">View on GitHub</a>
+      <a href="#pricing" class="btn btn-secondary">Get Started</a>
+    </div>
+  </div>
+</section>
+
+<section class="code-section">
+  <div class="container">
+    <div class="code-block">
+<span class="comment"># Run pgstream with Docker</span><br>
+<span class="prompt">$</span> <span class="cmd">docker</span> <span class="flag">run</span> -e <span class="string">DATABASE_URL</span>=postgres://user:pass@host/db \
+<br>&nbsp;&nbsp;-e <span class="string">SLOT_NAME</span>=pgstream_slot \
+<br>&nbsp;&nbsp;mujib77/pgstream:latest
+    </div>
+  </div>
+</section>
+
+<section id="use-cases">
+  <div class="container">
+    <h2>What you can build</h2>
+    <p class="section-desc">pgstream enables real-time data pipelines for modern applications.</p>
+
+    <div class="use-case">
+      <h3>Cache Invalidation</h3>
+      <p>Automatically invalidate Redis or Memcached entries as soon as database records change. No more stale cache or complex dual-write logic.</p>
+    </div>
+    <div class="use-case">
+      <h3>Real-time Analytics</h3>
+      <p>Stream database changes to Elasticsearch, ClickHouse, or data warehouses for live dashboards without batch ETL jobs.</p>
+    </div>
+    <div class="use-case">
+      <h3>Data Synchronization</h3>
+      <p>Keep microservices in sync by streaming changes across service boundaries. Each service gets its own read-optimized view.</p>
+    </div>
+    <div class="use-case">
+      <h3>Audit Logs</h3>
+      <p>Capture every INSERT, UPDATE, and DELETE as an immutable event stream for compliance, auditing, and change tracking.</p>
+    </div>
+    <div class="use-case">
+      <h3>Search Index Updates</h3>
+      <p>Keep search indexes in sync with your database in real-time, not on a cron schedule.</p>
+    </div>
+    <div class="use-case">
+      <h3>CQRS & Event Sourcing</h3>
+      <p>Feed read models and event stores directly from your PostgreSQL write model.</p>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <h2>Why pgstream?</h2>
+    <p class="section-desc">Built for production workloads.</p>
+
+    <div class="feature">
+      <div class="feature-check">✓</div>
+      <div>
+        <h4>Zero Data Loss</h4>
+        <p>LSN tracking and replication slots ensure every change is captured, even through restarts.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-check">✓</div>
+      <div>
+        <h4>Lightweight</h4>
+        <p>Single Go binary. No Kafka Connect, no ZooKeeper, no JVM.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-check">✓</div>
+      <div>
+        <h4>Native PostgreSQL</h4>
+        <p>Uses pgoutput logical decoding — the same mechanism as Debezium, without the infrastructure.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-check">✓</div>
+      <div>
+        <h4>Testable</h4>
+        <p>Interface-driven design with mockable connectors. Unit-test without a real database.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-check">✓</div>
+      <div>
+        <h4>Graceful Shutdown</h4>
+        <p>Handles SIGTERM properly, flushing buffers and closing connections cleanly.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-check">✓</div>
+      <div>
+        <h4>Docker & CI/CD Ready</h4>
+        <p>Multi-stage builds, GitHub Actions, one-line Docker deploy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>How it works</h2>
+    <p class="section-desc">Simple architecture that plugs into your PostgreSQL instance.</p>
+    <div class="arch-flow">
+      <div class="arch-box">PostgreSQL</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box highlight">pgstream</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">Your App</div>
+    </div>
+    <p class="arch-caption">
+      pgstream connects via a replication slot, decodes WAL events using pgoutput, and delivers structured change events to your application.
+    </p>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="container">
+    <h2>Pricing</h2>
+    <p class="section-desc">Self-host for free, or let us run it for you.</p>
+    <div class="pricing-wrap">
+      <div class="pricing-col">
+        <h3>Self-Hosted</h3>
+        <div class="price">$0<span>/month</span></div>
+        <ul>
+          <li>Full source code (MIT)</li>
+          <li>Docker image</li>
+          <li>Community support</li>
+          <li>Documentation & examples</li>
+        </ul>
+        <a href="https://github.com/mujib77/pgstream" class="btn btn-secondary" target="_blank">Get Started</a>
+      </div>
+      <div class="pricing-col popular">
+        <h3>Managed</h3>
+        <div class="price">$99<span>/month</span></div>
+        <ul>
+          <li>We host and operate</li>
+          <li>99.9% uptime SLA</li>
+          <li>Priority email & Slack support</li>
+          <li>Custom integrations</li>
+          <li>Monitoring & alerts</li>
+        </ul>
+        <a href="mailto:mujibkhanpathan6@gmail.com?subject=pgstream%20Managed" class="btn btn-primary">Contact</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container">
+    <h2>Ready to stream your data?</h2>
+    <p>Get started in minutes, or reach out for a custom integration.</p>
+    <div class="cta-buttons">
+      <a href="https://github.com/mujib77/pgstream" class="btn btn-primary" target="_blank">View on GitHub</a>
+      <a href="mailto:mujibkhanpathan6@gmail.com" class="btn btn-secondary">Email</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Built with passion for PostgreSQL internals and systems programming in Go.</p>
+    <p>
+      <a href="https://github.com/mujib77/pgstream" target="_blank">GitHub</a> · 
+      <a href="https://dev.to/mujib77" target="_blank">Blog</a>
+    </p>
+    <p style="margin-top: 16px; font-size: 13px; color: #a3a3a3;">
+      © 2026 pgstream. MIT License.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
