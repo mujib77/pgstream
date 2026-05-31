@@ -356,6 +356,33 @@
 
   .pricing-col ul li:last-child { border-bottom: none; }
 
+  .email-contact {
+    margin-top: 8px;
+  }
+
+  .email-label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .email-address {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2px;
+    transition: border-color 0.2s;
+  }
+
+  .email-address:hover {
+    border-color: var(--text);
+  }
+
   /* CTA */
   .cta {
     background: var(--bg-subtle);
@@ -567,7 +594,7 @@
       </div>
       <div class="pricing-col popular">
         <h3>Managed</h3>
-        <div class="price">$99<span>/month</span></div>
+        <div class="price">$39<span>/month</span></div>
         <ul>
           <li>We host and operate</li>
           <li>99.9% uptime SLA</li>
@@ -575,7 +602,10 @@
           <li>Custom integrations</li>
           <li>Monitoring & alerts</li>
         </ul>
-        <a href="mailto:mujibkhanpathan6@gmail.com?subject=pgstream%20Managed" class="btn btn-primary">Contact</a>
+        <div class="email-contact">
+          <span class="email-label">Get in touch</span>
+          <a href="mailto:mujibkhanpathan6@gmail.com" class="email-address">mujibkhanpathan6@gmail.com</a>
+        </div>
       </div>
     </div>
   </div>
