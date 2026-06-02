@@ -108,7 +108,3 @@ func (c *Connector) GetConn() Conn {
 func (c *Connector) GetRawConn() *pgconn.PgConn {
 	return c.rawConn
 }
-
-func (c *Connector) ReceiveMessage(ctx context.Context) (pgproto3.BackendMessage, error) {
-	return c.conn.ReceiveMessage(ctx)
-}
