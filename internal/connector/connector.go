@@ -108,5 +108,3 @@ func (c *Connector) GetConn() Conn {
 func (c *Connector) GetRawConn() *pgconn.PgConn {
 	return c.rawConn
 }
-
-// test for demo video
