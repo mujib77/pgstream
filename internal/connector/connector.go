@@ -109,4 +109,3 @@ func (c *Connector) GetRawConn() *pgconn.PgConn {
 	return c.rawConn
 }
 
-// demo test for kommit
